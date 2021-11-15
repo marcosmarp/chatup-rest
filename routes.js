@@ -30,7 +30,7 @@ router.post('/api/users/', async (req, res) => {
   }
 });
 
-router.post('/api/users/authenticate/', async (req, res) => {
+router.post('/api/users/auth/', async (req, res) => {
   try {
     console.log(`POST ${req.path} from ${req.ip}`);
 
