@@ -1,9 +1,10 @@
 const bcrypt = require('bcrypt');
 const User = require('./User');
+require ('dotenv/config');
 
 const hashPassword = async (password) => {
   try {
-      return await bcrypt.hash(password, 12);
+      return await bcrypt.hash(password, parseInt(process.env.SALT_ROUNDS));
   } catch (err) {
       console.log(err);
   }
@@ -11,9 +12,7 @@ const hashPassword = async (password) => {
 };
 
 const checkPassword = async (user, password) => {
-  const hash = await hashPassword(password);
-  console.log(hash, user.hash);
-  return await bcrypt.compare(hash, user.hash);
+  return await bcrypt.compare(password, user.hash);
 }
 
 const userExist = async (username) => {
