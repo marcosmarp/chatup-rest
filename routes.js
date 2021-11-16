@@ -1,7 +1,10 @@
 const router = require('express').Router();
 const User = require('./models/User/User');
 const UserFunctions = require('./models/User/functions')
+const Chatroom = require('./models/Chatroom/Chatroom');
+const Chat = require('./models/Chat/Chat');
 
+// Users routes
 router.get('/api/users/', async (req, res) => {
   try {
     console.log(`GET ${req.path} from ${req.ip}`);
@@ -45,6 +48,19 @@ router.post('/api/users/auth/', async (req, res) => {
     console.log(err);
     res.json(err);
   }
-})
+});
+
+// Chatrooms routes
+router.get('/api/chatrooms/', async (req, res) => {
+  try {
+    console.log(`GET ${req.path} from ${req.ip}`);
+    const chatrooms = await Chatroom.find();
+    res.json(chatrooms);
+  } 
+  catch (err) {
+    console.log(err);
+    res.json(err);
+  }
+});
 
 module.exports = router;
