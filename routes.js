@@ -42,6 +42,10 @@ router.post('/api/users/auth/', async (req, res) => {
     
     const user = await UserFunctions.getUserByUsername(req.body.username);
     const authenticated = await UserFunctions.checkPassword(user, req.body.password);
+    // @ts-ignore
+    req.session.authenticated = authenticated;
+    // @ts-ignore
+    if (authenticated) req.session.user = req.body.username;
     res.json(authenticated);
   }
   catch (err) {
@@ -49,6 +53,14 @@ router.post('/api/users/auth/', async (req, res) => {
     res.json(err);
   }
 });
+
+router.post('/api/user/log-out/', async (req, res) => {
+  // @ts-ignore
+  req.session.authenticated = undefined;
+  // @ts-ignore
+  req.session.user = undefined;
+  res.json({"authenticated": "false"})
+})
 
 // Chatrooms routes
 router.get('/api/chatrooms/', async (req, res) => {
