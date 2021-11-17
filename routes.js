@@ -15,7 +15,7 @@ router.get('/api/users/', async (req, res) => {
   } 
   catch (err) {
     console.log(err);
-    res.json(err);
+    res.json({"error": err});
   }
 });
 
@@ -31,7 +31,7 @@ router.post('/api/users/auth/register/', async (req, res) => {
   } 
   catch (err) {
     console.log(err);
-    res.json(err);
+    res.json({"error": err});
   }
 });
 
@@ -52,7 +52,7 @@ router.post('/api/users/auth/log-in/', async (req, res) => {
   }
   catch (err) {
     console.log(err);
-    res.json(err);
+    res.json({"error": err});
   }
 });
 
@@ -73,7 +73,7 @@ router.get('/api/chatrooms/', async (req, res) => {
   } 
   catch (err) {
     console.log(err);
-    res.json(err);
+    res.json({"error": err});
   }
 });
 
@@ -92,7 +92,7 @@ router.post('/api/chatrooms/', async (req, res) => {
   }
   catch (err) {
     console.log(err);
-    res.json(err);
+    res.json({"error": err});
   }
 });
 
