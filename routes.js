@@ -123,6 +123,23 @@ router.delete('/api/chatrooms/:id/', async (req, res) => {
 });
 
 // Chats routes
+router.get('/api/chatrooms/:id/chats/', async (req, res) => {
+  try {
+    console.log(`GET ${req.path} from ${req.ip}`);
+
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"error": "invalid chatroom id"});
+    const chatroomExists = await ChatroomFunctions.chatroomExists(req.params.id);
+    if (!chatroomExists) return res.status(400).json({"error": "invalid chatroom"});
+
+    const chatroom = await Chatroom.findById(req.params.id);
+    res.json(chatroom.chats);
+  }
+  catch (err) {
+    console.log(err);
+    res.json({"error": err});
+  }
+});
+
 router.post('/api/chatrooms/:id/chats/', async (req, res) => {
   try {
     console.log(`POST ${req.path} from ${req.ip}`);
