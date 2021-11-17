@@ -4,6 +4,7 @@ const UserFunctions = require('./models/User/functions')
 const Chatroom = require('./models/Chatroom/Chatroom');
 const ChatroomFunctions = require('./models/Chatroom/functions');
 const Chat = require('./models/Chat/Chat');
+const ChatFunctions = require('./models/Chat/functions')
 
 // Users routes
 router.get('/api/users/', async (req, res) => {
@@ -78,6 +79,8 @@ router.get('/api/chatrooms/', async (req, res) => {
 
 router.post('/api/chatrooms/', async (req, res) => {
   try {
+    console.log(`POST ${req.path} from ${req.ip}`);
+
     // @ts-ignore
     if (!req.session.authenticated) return res.status(403).json({"error": "log in"});
     if (!req.body.name.replace(/\s/g, '').length) return res.status(400).json({"error": "invalid name"});
@@ -95,6 +98,8 @@ router.post('/api/chatrooms/', async (req, res) => {
 
 router.delete('/api/chatrooms/:id/', async (req, res) => {
   try {
+    console.log(`DELETE ${req.path} from ${req.ip}`);
+
     if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"error": "invalid id"});
     // @ts-ignore
     if (!req.session.authenticated) return res.status(403).json({"error": "log in"});
@@ -115,6 +120,60 @@ router.delete('/api/chatrooms/:id/', async (req, res) => {
     console.log(err);
     res.json({"error": err});
   }
-})
+});
+
+// Chats routes
+router.post('/api/chatrooms/:id/chats/', async (req, res) => {
+  try {
+    console.log(`POST ${req.path} from ${req.ip}`);
+
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"error": "invalid id"});
+    // @ts-ignore
+    if (!req.session.authenticated) return res.status(403).json({"error": "log in"});
+
+    const chatroomExists = await ChatroomFunctions.chatroomExists(req.params.id);
+    if (!chatroomExists) return res.status(400).json({"error": "invalid chatroom"});
+
+    if (!req.body.content.replace(/\s/g, '').length) return res.status(400).json({"error": "invalid content"});
+
+    const chatroom = await Chatroom.findById(req.params.id);
+    // @ts-ignore
+    const user = await UserFunctions.getUserByUsername(req.session.user);
+    const chat = await ChatFunctions.createChat(chatroom, user, req.body.content);
+
+    await chatroom.chats.push(chat._id);
+    const userInChatroom = await ChatroomFunctions.userExists(chatroom, user);
+    if (!userInChatroom) await chatroom.users.push(user._id);
+    chatroom.save();
+
+    res.json(chat);
+  }
+  catch (err) {
+    res.json({"error": err});
+  }
+});
+
+router.get('/api/chatrooms/:chatroomId/chats/:chatId/', async (req, res) => {
+  try {
+    console.log(`GET ${req.path} from ${req.ip}`);
+
+    if (!req.params.chatroomId.match(/^[0-9a-fA-F]{24}$/)) return res.json({"error": "invalid chatroom id"});
+    if (!req.params.chatId.match(/^[0-9a-fA-F]{24}$/)) return res.json({"error": "invalid chat id"});
+
+    const chatroomExists = await ChatroomFunctions.chatroomExists(req.params.chatroomId);
+    if (!chatroomExists) return res.status(400).json({"error": "invalid chatroom"});
+    const chatExists = await ChatFunctions.chatExists(req.params.chatId);
+    if (!chatExists) return res.status(400).json({"error": "invalid chat"});
+
+    const chat = await Chat.findById(req.params.chatId);
+    res.json(chat);
+  }
+  catch (err) {
+    console.log(err);
+    res.json({"error": err});
+  }
+  
+  
+});
 
 module.exports = router;

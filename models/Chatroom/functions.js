@@ -14,5 +14,12 @@ const chatroomExists = async (id) => {
   return await Chatroom.exists({_id: id});
 }
 
+const userExists = async (chatroom, searched_user) => {
+  return await chatroom.users.some(async (user) => {
+    return await user.equals(searched_user.id);
+  });
+}
+
 exports.createChatroom = createChatroom;
 exports.chatroomExists = chatroomExists;
+exports.userExists = userExists;
