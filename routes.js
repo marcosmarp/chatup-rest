@@ -19,7 +19,7 @@ router.get('/api/users/', async (req, res) => {
   }
 });
 
-router.post('/api/users/', async (req, res) => {
+router.post('/api/users/auth/register/', async (req, res) => {
   try {
     console.log(`POST ${req.path} from ${req.ip}`);
 
@@ -35,7 +35,7 @@ router.post('/api/users/', async (req, res) => {
   }
 });
 
-router.post('/api/users/auth/', async (req, res) => {
+router.post('/api/users/auth/log-in/', async (req, res) => {
   try {
     console.log(`POST ${req.path} from ${req.ip}`);
 
@@ -56,7 +56,7 @@ router.post('/api/users/auth/', async (req, res) => {
   }
 });
 
-router.post('/api/users/log-out/', async (req, res) => {
+router.post('/api/users/auth/log-out/', async (req, res) => {
   // @ts-ignore
   req.session.authenticated = undefined;
   // @ts-ignore
