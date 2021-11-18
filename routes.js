@@ -29,7 +29,7 @@ router.get('/api/users/:id/username/', async (req, res) => {
     if (!userExists) return res.status(400).json({"error": "unexistent user"});
   
     const user = await User.findById(req.params.id);
-    res.json(user.username);
+    res.json({"username": user.username});
   }
   catch (err) {
     res.json({"err": err});
