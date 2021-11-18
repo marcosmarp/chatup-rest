@@ -20,16 +20,21 @@ router.get('/api/users/', async (req, res) => {
 });
 
 router.get('/api/users/:id/username/', async (req, res) => {
-  console.log(`GET ${req.path} from ${req.ip}`);
+  try {
+    console.log(`GET ${req.path} from ${req.ip}`);
 
-  if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"error": "invalid id"});
-
-  const userExists = await User.exists({id: req.params.id});
-  if (!userExists) return res.status(400).json({"error": "unexistent user"});
-
-  const user = await User.findById(req.params.id);
-  res.json(user.username);
-})
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"error": "invalid id"});
+  
+    const userExists = await User.exists({id: req.params.id});
+    if (!userExists) return res.status(400).json({"error": "unexistent user"});
+  
+    const user = await User.findById(req.params.id);
+    res.json(user.username);
+  }
+  catch (err) {
+    res.json({"err": err});
+  }
+});
 
 router.post('/api/users/auth/register/', async (req, res) => {
   try {
