@@ -10,29 +10,12 @@ const ChatFunctions = require('./models/Chat/functions')
 router.get('/api/users/', async (req, res) => {
   try {
     console.log(`GET ${req.path} from ${req.ip}`);
-    const users = await User.find();
+    const users = await User.find().populate('chatrooms');
     res.json(users)
   } 
   catch (err) {
     console.log(err);
     res.json({"error": err});
-  }
-});
-
-router.get('/api/users/:id/username/', async (req, res) => {
-  try {
-    console.log(`GET ${req.path} from ${req.ip}`);
-
-    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"error": "invalid id"});
-  
-    const userExists = await User.exists({id: req.params.id});
-    if (!userExists) return res.status(400).json({"error": "unexistent user"});
-  
-    const user = await User.findById(req.params.id);
-    res.json({"username": user.username});
-  }
-  catch (err) {
-    res.json({"err": err});
   }
 });
 
@@ -85,7 +68,10 @@ router.post('/api/users/auth/log-out/', async (req, res) => {
 router.get('/api/chatrooms/', async (req, res) => {
   try {
     console.log(`GET ${req.path} from ${req.ip}`);
-    const chatrooms = await Chatroom.find();
+    const chatrooms = await Chatroom.find()
+    .populate({path: 'creator', select: 'username'})
+    .populate({path: 'users', select: 'username'})
+    .populate({path: 'chats', select: 'creator content'});
     res.json(chatrooms);
   } 
   catch (err) {
@@ -148,8 +134,9 @@ router.get('/api/chatrooms/:id/chats/', async (req, res) => {
     const chatroomExists = await ChatroomFunctions.chatroomExists(req.params.id);
     if (!chatroomExists) return res.status(400).json({"error": "invalid chatroom"});
 
-    const chatroom = await Chatroom.findById(req.params.id);
-    res.json(chatroom.chats);
+    const chatroom = await Chatroom.findById(req.params.id)
+    const chats = await chatroom.chats.populate({path: 'creator', select: 'username'});
+    res.json(chats);
   }
   catch (err) {
     console.log(err);
@@ -203,7 +190,7 @@ router.get('/api/chatrooms/:chatroomId/chats/:chatId/', async (req, res) => {
     const chatExists = await ChatFunctions.chatExists(req.params.chatId);
     if (!chatExists) return res.status(400).json({"error": "invalid chat"});
 
-    const chat = await Chat.findById(req.params.chatId);
+    const chat = await Chat.findById(req.params.chatId).populate({path: 'creator', select: 'username'});;
     res.json(chat);
   }
   catch (err) {
