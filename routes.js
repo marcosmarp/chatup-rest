@@ -11,11 +11,11 @@ router.get('/api/users/', async (req, res) => {
   try {
     console.log(`GET ${req.path} from ${req.ip}`);
     const users = await User.find().populate('chatrooms');
-    res.json(users)
+    res.json({"success": true, "users": users});
   } 
   catch (err) {
     console.log(err);
-    res.json({"error": err});
+    res.json({"success": false, "error": err});
   }
 });
 
@@ -24,14 +24,14 @@ router.post('/api/users/auth/register/', async (req, res) => {
     console.log(`POST ${req.path} from ${req.ip}`);
 
     const userExists = await UserFunctions.userExist(req.body.username);
-    if (userExists) return res.json({"error": "username taken"});
+    if (userExists) return res.json({"success": false, "error": "username taken"});
 
     const user = await UserFunctions.createUser(req.body.username, req.body.password);
-    res.json(user);
+    res.json({"success": true, "user": user});
   } 
   catch (err) {
     console.log(err);
-    res.json({"error": err});
+    res.json({"success": false, "error": err});
   }
 });
 
@@ -40,7 +40,7 @@ router.post('/api/users/auth/log-in/', async (req, res) => {
     console.log(`POST ${req.path} from ${req.ip}`);
 
     const userExists = await UserFunctions.userExist(req.body.username);
-    if (!userExists) return res.json({"error": "username not taken"});
+    if (!userExists) return res.json({"success": false, "error": "unexistent username"});
     
     const user = await UserFunctions.getUserByUsername(req.body.username);
     const authenticated = await UserFunctions.checkPassword(user, req.body.password);
@@ -48,11 +48,11 @@ router.post('/api/users/auth/log-in/', async (req, res) => {
     req.session.authenticated = authenticated;
     // @ts-ignore
     if (authenticated) req.session.user = req.body.username;
-    res.json(authenticated);
+    res.json({"success": true, "authenticated": authenticated});
   }
   catch (err) {
     console.log(err);
-    res.json({"error": err});
+    res.json({"success": false, "error": err});
   }
 });
 
@@ -61,7 +61,7 @@ router.post('/api/users/auth/log-out/', async (req, res) => {
   req.session.authenticated = undefined;
   // @ts-ignore
   req.session.user = undefined;
-  res.json({"authenticated": "false"})
+  res.json({"success": true})
 })
 
 // Chatrooms routes
@@ -72,11 +72,11 @@ router.get('/api/chatrooms/', async (req, res) => {
     .populate({path: 'creator', select: 'username'})
     .populate({path: 'users', select: 'username'})
     .populate({path: 'chats', select: 'creator content'});
-    res.json(chatrooms);
+    res.json({"success": true, "chatrooms": chatrooms});
   } 
   catch (err) {
     console.log(err);
-    res.json({"error": err});
+    res.json({"success": false, "error": err});
   }
 });
 
@@ -85,17 +85,17 @@ router.post('/api/chatrooms/', async (req, res) => {
     console.log(`POST ${req.path} from ${req.ip}`);
 
     // @ts-ignore
-    if (!req.session.authenticated) return res.status(403).json({"error": "log in"});
-    if (!req.body.name.replace(/\s/g, '').length) return res.status(400).json({"error": "invalid name"});
+    if (!req.session.authenticated) return res.status(403).json({"success": false, "error": "not authenticated"});
+    if (!req.body.name.replace(/\s/g, '').length) return res.status(400).json({"success": false, "error": "empty name"});
 
     // @ts-ignore
     const user = await UserFunctions.getUserByUsername(req.session.user);
     const chatroom = await ChatroomFunctions.createChatroom(user, req.body.name);
-    res.json(chatroom);
+    res.json({"success": true, "chatroom": chatroom});
   }
   catch (err) {
     console.log(err);
-    res.json({"error": err});
+    res.json({"success": false, "error": err});
   }
 });
 
@@ -103,25 +103,25 @@ router.delete('/api/chatrooms/:id/', async (req, res) => {
   try {
     console.log(`DELETE ${req.path} from ${req.ip}`);
 
-    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"error": "invalid id"});
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"success": false, "error": "invalid id"});
     // @ts-ignore
-    if (!req.session.authenticated) return res.status(403).json({"error": "log in"});
+    if (!req.session.authenticated) return res.status(403).json({"success": false, "error": "not authenticated"});
 
     const chatroomExists = await ChatroomFunctions.chatroomExists(req.params.id);
-    if (!chatroomExists) return res.status(400).json({"error": "invalid chatroom"});
+    if (!chatroomExists) return res.status(400).json({"success": false, "error": "invalid chatroom"});
 
     const chatroom = await Chatroom.findById(req.params.id);
     // @ts-ignore
     const user = await UserFunctions.getUserByUsername(req.session.user);
 
-    if (!chatroom.creator.equals(user._id)) return res.status(403).json({"error": "invalid user"});
+    if (!chatroom.creator.equals(user._id)) return res.status(403).json({"success": false, "error": "forbidden"});
 
     const deletedChatroom = await Chatroom.findByIdAndDelete(req.params.id)
-    res.json(deletedChatroom);
+    res.json({"success": true, "chatroom": deletedChatroom});
   } 
   catch (err) {
     console.log(err);
-    res.json({"error": err});
+    res.json({"success": false, "error": err});
   }
 });
 
@@ -130,17 +130,17 @@ router.get('/api/chatrooms/:id/chats/', async (req, res) => {
   try {
     console.log(`GET ${req.path} from ${req.ip}`);
 
-    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"error": "invalid chatroom id"});
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"success": false, "error": "invalid id"});
     const chatroomExists = await ChatroomFunctions.chatroomExists(req.params.id);
-    if (!chatroomExists) return res.status(400).json({"error": "invalid chatroom"});
+    if (!chatroomExists) return res.status(400).json({"success": false, "error": "invalid chatroom"});
 
     const chatroom = await Chatroom.findById(req.params.id)
     const chats = await chatroom.chats.populate({path: 'creator', select: 'username'});
-    res.json(chats);
+    res.json({"success": true, "chats": chats});
   }
   catch (err) {
     console.log(err);
-    res.json({"error": err});
+    res.json({"success": false, "error": err});
   }
 });
 
@@ -148,14 +148,14 @@ router.post('/api/chatrooms/:id/chats/', async (req, res) => {
   try {
     console.log(`POST ${req.path} from ${req.ip}`);
 
-    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"error": "invalid id"});
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"success": false, "error": "invalid id"});
     // @ts-ignore
-    if (!req.session.authenticated) return res.status(403).json({"error": "log in"});
+    if (!req.session.authenticated) return res.status(403).json({"success": false, "error": "not authenticated"});
 
     const chatroomExists = await ChatroomFunctions.chatroomExists(req.params.id);
-    if (!chatroomExists) return res.status(400).json({"error": "invalid chatroom"});
+    if (!chatroomExists) return res.status(400).json({"success": false, "error": "invalid chatroom"});
 
-    if (!req.body.content.replace(/\s/g, '').length) return res.status(400).json({"error": "invalid content"});
+    if (!req.body.content.replace(/\s/g, '').length) return res.status(400).json({"success": false, "error": "empty message"});
 
     const chatroom = await Chatroom.findById(req.params.id);
     // @ts-ignore
@@ -171,10 +171,10 @@ router.post('/api/chatrooms/:id/chats/', async (req, res) => {
     user.save();
     chatroom.save();
 
-    res.json(chat);
+    res.json({"success": true, "chat": chat});
   }
   catch (err) {
-    res.json({"error": err});
+    res.json({"success": false, "error": err});
   }
 });
 
@@ -182,23 +182,21 @@ router.get('/api/chatrooms/:chatroomId/chats/:chatId/', async (req, res) => {
   try {
     console.log(`GET ${req.path} from ${req.ip}`);
 
-    if (!req.params.chatroomId.match(/^[0-9a-fA-F]{24}$/)) return res.json({"error": "invalid chatroom id"});
-    if (!req.params.chatId.match(/^[0-9a-fA-F]{24}$/)) return res.json({"error": "invalid chat id"});
+    if (!req.params.chatroomId.match(/^[0-9a-fA-F]{24}$/)) return res.json({"success": false, "error": "invalid chatroom id"});
+    if (!req.params.chatId.match(/^[0-9a-fA-F]{24}$/)) return res.json({"success": false, "error": "invalid chat id"});
 
     const chatroomExists = await ChatroomFunctions.chatroomExists(req.params.chatroomId);
-    if (!chatroomExists) return res.status(400).json({"error": "invalid chatroom"});
+    if (!chatroomExists) return res.status(400).json({"success": false, "error": "invalid chatroom"});
     const chatExists = await ChatFunctions.chatExists(req.params.chatId);
-    if (!chatExists) return res.status(400).json({"error": "invalid chat"});
+    if (!chatExists) return res.status(400).json({"success": false, "error": "invalid chat"});
 
     const chat = await Chat.findById(req.params.chatId).populate({path: 'creator', select: 'username'});;
-    res.json(chat);
+    res.json({"success": true, "chat": chat});
   }
   catch (err) {
     console.log(err);
-    res.json({"error": err});
+    res.json({"success": false, "error": err});
   }
-  
-  
 });
 
 module.exports = router;
