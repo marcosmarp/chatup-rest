@@ -29,7 +29,7 @@ router.post('/api/users/auth/register/', async (req, res) => {
     if (userExists) return res.json({"success": false, "error": "username taken"});
 
     const user = await UserFunctions.createUser(req.body.username, req.body.password);
-    res.json({"success": true, "user": user});
+    res.json({"success": true});
   } 
   catch (err) {
     console.log(err);
