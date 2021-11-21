@@ -41,6 +41,9 @@ router.post('/api/users/auth/log-in/', async (req, res) => {
   try {
     console.log(`POST ${req.path} from ${req.ip}`);
 
+    if (!req.body.username.replace(/\s/g, '').length) return res.status(400).json({"success": false, "error": "empty username"});
+    if (!req.body.password.replace(/\s/g, '').length) return res.status(400).json({"success": false, "error": "empty password"});
+
     const userExists = await UserFunctions.userExist(req.body.username);
     if (!userExists) return res.json({"success": false, "error": "unexistent username"});
     
