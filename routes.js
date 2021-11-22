@@ -117,6 +117,8 @@ router.get('/api/chatrooms/:id/', async (req, res) => {
     .populate({path: 'creator', select: 'username'})
     .populate({path: 'users', select: 'username'})
     .populate({path: 'chats', select: 'creator content createdAt'});
+
+    for (let i=0 ; i < chatroom.chats.length ; ++i) await chatroom.chats[i].populate({path: 'creator', select: 'username'});
     
     res.json({"success": true, "chatroom": chatroom});
   } 
