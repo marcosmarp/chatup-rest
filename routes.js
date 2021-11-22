@@ -62,6 +62,7 @@ router.post('/api/users/auth/log-in/', async (req, res) => {
 });
 
 router.post('/api/users/auth/log-out/', async (req, res) => {
+  console.log(`POST ${req.path} from ${req.ip}`);
   // @ts-ignore
   req.session.authenticated = undefined;
   // @ts-ignore
