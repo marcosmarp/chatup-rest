@@ -104,6 +104,28 @@ router.post('/api/chatrooms/', async (req, res) => {
   }
 });
 
+router.get('/api/chatrooms/:id/', async (req, res) => {
+  try {
+    console.log(`GET ${req.path} from ${req.ip}`);
+
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"success": false, "error": "invalid id"});
+
+    const chatroomExists = await ChatroomFunctions.chatroomExists(req.params.id);
+    if (!chatroomExists) return res.status(400).json({"success": false, "error": "invalid chatroom"});
+
+    const chatroom = await Chatroom.findById(req.params.id)
+    .populate({path: 'creator', select: 'username'})
+    .populate({path: 'users', select: 'username'})
+    .populate({path: 'chats', select: 'creator content createdAt'});
+    
+    res.json({"success": true, "chatroom": chatroom});
+  } 
+  catch (err) {
+    console.log(err);
+    res.json({"success": false, "error": err});
+  }
+});
+
 router.delete('/api/chatrooms/:id/', async (req, res) => {
   try {
     console.log(`DELETE ${req.path} from ${req.ip}`);
