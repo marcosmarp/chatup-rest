@@ -88,6 +88,21 @@ router.get('/api/chatrooms/', async (req, res) => {
   }
 });
 
+router.get('/api/chatrooms/:keyword/', async (req, res) => {
+  try {
+    console.log(`GET ${req.path} from ${req.ip}`);
+    const chatrooms = await Chatroom.find({keywords: req.params.keyword})
+    .populate({path: 'creator', select: 'username'})
+    .populate({path: 'users', select: 'username'})
+    .populate({path: 'chats', select: 'creator content'});
+    res.json({"success": true, "chatrooms": chatrooms});
+  } 
+  catch (err) {
+    console.log(err);
+    res.json({"success": false, "error": err});
+  }
+});
+
 router.post('/api/chatrooms/', async (req, res) => {
   try {
     console.log(`POST ${req.path} from ${req.ip}`);
