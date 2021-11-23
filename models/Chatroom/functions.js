@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const createChatroom = async (user, name) => {
   const chatroom = await new Chatroom({
     name: name,
-    creator: user._id,
+    creator: user._id
   });
   await chatroom.users.push(user._id);
   await user.chatrooms.push(chatroom._id);

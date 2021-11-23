@@ -21,8 +21,12 @@ const ChatroomSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Chat',
     }
+  ],
+  keywords: [
+    {
+      type: String
+    }
   ]
-
 }, { timestamps: true });
 
 module.exports = mongoose.model('Chatroom', ChatroomSchema);

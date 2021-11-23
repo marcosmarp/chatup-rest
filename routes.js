@@ -51,6 +51,7 @@ router.post('/api/users/auth/log-in/', async (req, res) => {
     const authenticated = await UserFunctions.checkPassword(user, req.body.password);
     // @ts-ignore
     req.session.authenticated = authenticated;
+    req.session.save();
     // @ts-ignore
     if (authenticated) req.session.user = req.body.username;
     res.json({"success": true, "authenticated": authenticated});
@@ -64,10 +65,11 @@ router.post('/api/users/auth/log-in/', async (req, res) => {
 router.post('/api/users/auth/log-out/', async (req, res) => {
   console.log(`POST ${req.path} from ${req.ip}`);
   // @ts-ignore
-  req.session.authenticated = undefined;
+  req.session.authenticated = false;
   // @ts-ignore
   req.session.user = undefined;
-  res.json({"success": true})
+  req.session.save();
+  res.json({"success": true});
 })
 
 // Chatrooms routes
@@ -97,6 +99,12 @@ router.post('/api/chatrooms/', async (req, res) => {
     // @ts-ignore
     const user = await UserFunctions.getUserByUsername(req.session.user);
     const chatroom = await ChatroomFunctions.createChatroom(user, req.body.name);
+    if (req.body.keywords.replace(/\s/g, '').length) {
+      const keywords = req.body.keywords.substring(0, 100).match(/([^\s]+)/g);
+      chatroom.keywords = keywords;
+      chatroom.save();
+    }
+
     res.json({"success": true, "chatroom": chatroom});
   }
   catch (err) {

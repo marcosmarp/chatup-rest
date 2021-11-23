@@ -9,13 +9,16 @@ const app = express();
 
 // Middlewares
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:3000"],
+  methods: ["GET", "POST"]
+}));
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true
-}))
+    saveUninitialized: false
+}));
 
 // Routes
 app.use(routes);
