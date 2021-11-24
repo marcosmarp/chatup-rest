@@ -103,6 +103,28 @@ router.get('/api/chatrooms/:keyword/', async (req, res) => {
   }
 });
 
+router.get('/api/chatrooms/:keyword/:selectCode/', async (req, res) => {
+  try {
+    console.log(`GET ${req.path} from ${req.ip}`);
+
+    const chatrooms = await Chatroom.find({keywords: req.params.keyword})
+    .populate({path: 'creator', select: 'username'})
+    .populate({path: 'users', select: 'username'})
+    .populate({path: 'chats', select: 'creator content'});
+
+    const selectCode = parseInt(req.params.selectCode);
+    if (selectCode < 0 || selectCode > chatrooms.length-1 || isNaN(selectCode)) {
+      return res.json({"success": false, "error": "invalid select code"});
+    }
+
+    res.json({"success": true, "chatroom": chatrooms[selectCode]});
+  } 
+  catch (err) {
+    console.log(err);
+    res.json({"success": false, "error": err});
+  }
+});
+
 router.post('/api/chatrooms/', async (req, res) => {
   try {
     console.log(`POST ${req.path} from ${req.ip}`);
