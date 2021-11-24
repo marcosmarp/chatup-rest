@@ -110,14 +110,17 @@ router.get('/api/chatrooms/:keyword/:selectCode/', async (req, res) => {
     const chatrooms = await Chatroom.find({keywords: req.params.keyword})
     .populate({path: 'creator', select: 'username'})
     .populate({path: 'users', select: 'username'})
-    .populate({path: 'chats', select: 'creator content'});
+    .populate({path: 'chats', select: 'creator content createdAt'});
 
     const selectCode = parseInt(req.params.selectCode);
     if (selectCode < 0 || selectCode > chatrooms.length-1 || isNaN(selectCode)) {
       return res.json({"success": false, "error": "invalid select code"});
     }
 
-    res.json({"success": true, "chatroom": chatrooms[selectCode]});
+    const chatroom = chatrooms[selectCode];
+    for (let i=0 ; i < chatroom.chats.length ; ++i) await chatroom.chats[i].populate({path: 'creator', select: 'username'});
+
+    res.json({"success": true, "chatroom": chatroom});
   } 
   catch (err) {
     console.log(err);
