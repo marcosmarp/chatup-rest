@@ -73,24 +73,6 @@ router.post('/api/users/auth/log-out/', async (req, res) => {
   res.json({"success": true});
 });
 
-router.get('/api/chatrooms/own/', async (req, res) => {
-  try {
-    console.log(`GET ${req.path} from ${req.ip}`);
-
-    // @ts-ignore
-    if (!req.session.authenticated) return res.status(403).json({"success": false, "error": "not authenticated"});
-
-    // @ts-ignore
-    const user = await UserFunctions.getUserByUsername(req.session.user);
-    const chatrooms = await Chatroom.find({users: user._id});
-    res.json({"success": true, "chatrooms": chatrooms});
-  }
-  catch (err) {
-    console.log(err);
-    res.json({"success": false, "error": err});
-  }
-})
-
 // Chatrooms routes
 router.get('/api/chatrooms/', async (req, res) => {
   try {
@@ -141,6 +123,24 @@ router.get('/api/chatrooms/:keyword/:selectCode/', async (req, res) => {
 
     res.json({"success": true, "chatroom": chatroom});
   } 
+  catch (err) {
+    console.log(err);
+    res.json({"success": false, "error": err});
+  }
+});
+
+router.get('/api/chatrooms/own/', async (req, res) => {
+  try {
+    console.log(`GET ${req.path} from ${req.ip}`);
+
+    // @ts-ignore
+    if (!req.session.authenticated) return res.status(403).json({"success": false, "error": "not authenticated"});
+
+    // @ts-ignore
+    const user = await UserFunctions.getUserByUsername(req.session.user);
+    const chatrooms = await Chatroom.find({users: user._id});
+    res.json({"success": true, "chatrooms": chatrooms});
+  }
   catch (err) {
     console.log(err);
     res.json({"success": false, "error": err});
