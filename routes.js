@@ -28,6 +28,7 @@ router.post('/api/users/auth/register/', async (req, res) => {
     const userExists = await UserFunctions.userExist(req.body.username);
     if (userExists) return res.json({"success": false, "error": "username taken"});
 
+    // @ts-ignore
     const user = await UserFunctions.createUser(req.body.username, req.body.password);
     res.json({"success": true});
   } 
@@ -70,6 +71,24 @@ router.post('/api/users/auth/log-out/', async (req, res) => {
   req.session.user = undefined;
   req.session.save();
   res.json({"success": true});
+});
+
+router.get('/api/chatrooms/own/', async (req, res) => {
+  try {
+    console.log(`GET ${req.path} from ${req.ip}`);
+
+    // @ts-ignore
+    if (!req.session.authenticated) return res.status(403).json({"success": false, "error": "not authenticated"});
+
+    // @ts-ignore
+    const user = await UserFunctions.getUserByUsername(req.session.user);
+    const chatrooms = await Chatroom.find({users: user._id});
+    res.json({"success": true, "chatrooms": chatrooms});
+  }
+  catch (err) {
+    console.log(err);
+    res.json({"success": false, "error": err});
+  }
 })
 
 // Chatrooms routes
