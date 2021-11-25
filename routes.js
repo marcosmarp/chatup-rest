@@ -277,4 +277,9 @@ router.get('/api/chatrooms/:chatroomId/chats/:chatId/', async (req, res) => {
   }
 });
 
+// Miscellanous
+router.get('/api/session/', (req, res) => {
+  res.json(req.session);
+});
+
 module.exports = router;
