@@ -123,7 +123,7 @@ router.get('/api/chatrooms/own/:selectCode/', async (req, res) => {
     const chatrooms = await Chatroom.find({users: user._id})
     .populate({path: 'creator', select: 'username'})
     .populate({path: 'users', select: 'username'})
-    .populate({path: 'chats', select: 'creator content'});
+    .populate({path: 'chats', select: 'creator content createdAt'});
 
     const selectCode = parseInt(req.params.selectCode);
     if (selectCode < 0 || selectCode > chatrooms.length-1 || isNaN(selectCode)) {
