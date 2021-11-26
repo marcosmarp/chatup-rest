@@ -260,7 +260,7 @@ router.post('/api/chatrooms/:id/chats/', async (req, res) => {
     const chat = await ChatFunctions.createChat(chatroom, user, req.body.content);
 
     await chatroom.chats.push(chat._id);
-    const userInChatroom = await ChatroomFunctions.userExists(chatroom, user);
+    const userInChatroom = await ChatroomFunctions.userExistsInChatroom(chatroom, user);
     if (!userInChatroom) {
       await chatroom.users.push(user._id);
       await user.chatrooms.push(chatroom._id);
