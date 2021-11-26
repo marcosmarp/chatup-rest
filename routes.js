@@ -158,6 +158,40 @@ router.delete('/api/chatrooms/own/:selectCode/', async (req, res) => {
   }
 });
 
+router.put('/api/chatrooms/own/:selectCode/', async (req, res) => {
+  try {
+    console.log(`PUT ${req.path} from ${req.ip}`);
+
+    // @ts-ignore
+    if (!req.session.authenticated) return res.status(403).json({"success": false, "error": "not authenticated"});
+
+    // @ts-ignore
+    const user = await UserFunctions.getUserByUsername(req.session.user);
+    const chatrooms = await Chatroom.find({users: user._id});
+
+    const selectCode = parseInt(req.params.selectCode);
+    if (selectCode < 0 || selectCode > chatrooms.length-1 || isNaN(selectCode)) {
+      return res.json({"success": false, "error": "invalid select code"});
+    }
+    
+    const chatroom = chatrooms[selectCode];
+
+    await chatroom.users.pull(user._id);
+    await user.chatrooms.pull(chatroom._id);
+
+    await chatroom.save();
+    await user.save();
+
+    if (chatroom.creator.equals(user._id)) await Chatroom.findByIdAndDelete(chatroom._id);
+
+    res.json({"success": true});
+  }
+  catch (err) {
+    console.log(err);
+    res.json({"success": false, "error": err});
+  }
+});
+
 router.get('/api/chatrooms/:keyword/', async (req, res) => {
   try {
     console.log(`GET ${req.path} from ${req.ip}`);
