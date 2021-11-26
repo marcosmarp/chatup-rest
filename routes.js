@@ -102,7 +102,38 @@ router.get('/api/chatrooms/own/', async (req, res) => {
     .populate({path: 'creator', select: 'username'})
     .populate({path: 'users', select: 'username'})
     .populate({path: 'chats', select: 'creator content'});
+
     res.json({"success": true, "chatrooms": chatrooms});
+  }
+  catch (err) {
+    console.log(err);
+    res.json({"success": false, "error": err});
+  }
+});
+
+router.get('/api/chatrooms/own/:selectCode/', async (req, res) => {
+  try {
+    console.log(`GET ${req.path} from ${req.ip}`);
+
+    // @ts-ignore
+    if (!req.session.authenticated) return res.status(403).json({"success": false, "error": "not authenticated"});
+
+    // @ts-ignore
+    const user = await UserFunctions.getUserByUsername(req.session.user);
+    const chatrooms = await Chatroom.find({users: user._id})
+    .populate({path: 'creator', select: 'username'})
+    .populate({path: 'users', select: 'username'})
+    .populate({path: 'chats', select: 'creator content'});
+
+    const selectCode = parseInt(req.params.selectCode);
+    if (selectCode < 0 || selectCode > chatrooms.length-1 || isNaN(selectCode)) {
+      return res.json({"success": false, "error": "invalid select code"});
+    }
+    
+    const chatroom = chatrooms[selectCode];
+    for (let i=0 ; i < chatroom.chats.length ; ++i) await chatroom.chats[i].populate({path: 'creator', select: 'username'});
+
+    res.json({"success": true, "chatroom": chatroom});
   }
   catch (err) {
     console.log(err);
