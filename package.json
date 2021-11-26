@@ -4,7 +4,8 @@
   "description": "App for creating chat rooms and closing them easily",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "nodemon app.js",
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm i --prefix client && npm run build --prefix client"
   },
   "keywords": [
     "chat",
