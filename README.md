@@ -60,7 +60,7 @@ All routes return and receive a JSON type data
 ### `GET` /api/chatrooms/`keyword`/`selectCode`/
 - Returns the chatroom that match the keyword and the select code
 
-### ´POST´ /api/chatrooms/`id`/chats/
+### `POST` /api/chatrooms/`id`/chats/
 - Creates a chat in a chatroom
 - Requires an authenticated user in the session
 - Requires a "content" in the body
