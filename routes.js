@@ -7,18 +7,6 @@ const Chat = require('./models/Chat/Chat');
 const ChatFunctions = require('./models/Chat/functions')
 
 // Users routes
-router.get('/api/users/', async (req, res) => {
-  try {
-    console.log(`GET ${req.path} from ${req.ip}`);
-    const users = await User.find().populate('chatrooms');
-    res.json({"success": true, "users": users});
-  } 
-  catch (err) {
-    console.log(err);
-    res.json({"success": false, "error": err});
-  }
-});
-
 router.post('/api/users/auth/register/', async (req, res) => {
   try {
     console.log(`POST ${req.path} from ${req.ip}`);
@@ -257,24 +245,6 @@ router.delete('/api/chatrooms/:id/', async (req, res) => {
 });
 
 // Chats routes
-router.get('/api/chatrooms/:id/chats/', async (req, res) => {
-  try {
-    console.log(`GET ${req.path} from ${req.ip}`);
-
-    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) return res.json({"success": false, "error": "invalid id"});
-    const chatroomExists = await ChatroomFunctions.chatroomExists(req.params.id);
-    if (!chatroomExists) return res.status(400).json({"success": false, "error": "invalid chatroom"});
-
-    const chatroom = await Chatroom.findById(req.params.id)
-    const chats = await chatroom.chats.populate({path: 'creator', select: 'username'});
-    res.json({"success": true, "chats": chats});
-  }
-  catch (err) {
-    console.log(err);
-    res.json({"success": false, "error": err});
-  }
-});
-
 router.post('/api/chatrooms/:id/chats/', async (req, res) => {
   try {
     console.log(`POST ${req.path} from ${req.ip}`);
@@ -307,32 +277,6 @@ router.post('/api/chatrooms/:id/chats/', async (req, res) => {
   catch (err) {
     res.json({"success": false, "error": err});
   }
-});
-
-router.get('/api/chatrooms/:chatroomId/chats/:chatId/', async (req, res) => {
-  try {
-    console.log(`GET ${req.path} from ${req.ip}`);
-
-    if (!req.params.chatroomId.match(/^[0-9a-fA-F]{24}$/)) return res.json({"success": false, "error": "invalid chatroom id"});
-    if (!req.params.chatId.match(/^[0-9a-fA-F]{24}$/)) return res.json({"success": false, "error": "invalid chat id"});
-
-    const chatroomExists = await ChatroomFunctions.chatroomExists(req.params.chatroomId);
-    if (!chatroomExists) return res.status(400).json({"success": false, "error": "invalid chatroom"});
-    const chatExists = await ChatFunctions.chatExists(req.params.chatId);
-    if (!chatExists) return res.status(400).json({"success": false, "error": "invalid chat"});
-
-    const chat = await Chat.findById(req.params.chatId).populate({path: 'creator', select: 'username'});;
-    res.json({"success": true, "chat": chat});
-  }
-  catch (err) {
-    console.log(err);
-    res.json({"success": false, "error": err});
-  }
-});
-
-// Miscellanous
-router.get('/api/session/', (req, res) => {
-  res.json(req.session);
 });
 
 module.exports = router;
